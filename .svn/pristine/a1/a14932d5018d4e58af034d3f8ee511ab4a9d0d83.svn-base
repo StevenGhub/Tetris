@@ -1,0 +1,128 @@
+package view;
+
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.WindowEvent;
+import java.util.HashMap;
+import java.util.Map;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.Timer;
+import model.Board;
+
+/**
+ * 
+ * @author steve
+ *
+ */
+public class MenuBar extends JMenuBar implements ActionListener{
+
+    /**
+     * Default serial version UID.
+     */
+    private static final long serialVersionUID = -111659266189879540L; 
+    
+    /**
+     * The speed of timer.
+     */
+    private static final int TIMER_FREQUENCY = 1000;
+    
+    /**
+     * 
+     */
+    private Board myTetrisBoard;
+    
+    /**
+     * 
+     */
+    private JMenuItem myNewGame;
+    
+    /**
+     * 
+     */
+    private JMenuItem myEndGame;
+    
+    /**
+     * 
+     */
+    private Timer myTimer;
+    
+    /**
+     * 
+     */
+    private boolean myToggle;
+    
+    /**
+     * 
+     */
+    private Map<Integer, Runnable> myKeyActions;
+    
+    /**
+     * Default constructor.
+     * @param theBoard
+     * @param theTimer
+     */
+    public MenuBar(final Board theBoard, final Timer theTimer) {
+        myTetrisBoard = theBoard;
+        myTimer = theTimer;
+        myToggle = false;
+        myKeyActions = new HashMap<Integer, Runnable>();
+        createMenuBar();
+        
+    }
+    
+    /**
+     * Build menu bar.
+     */
+    private void createMenuBar() {
+        final JMenu game = new JMenu("Game");
+        myNewGame = new JMenuItem("New Game");
+        myEndGame = new JMenuItem("End Game");
+        final JMenuItem exitGame = new JMenuItem("Exit");
+        
+        myEndGame.setEnabled(myToggle);
+        myEndGame.addActionListener(this);
+        myNewGame.addActionListener(this);
+        exitGame.addActionListener(new ActionListener() {
+            
+            @Override
+            public void actionPerformed(final ActionEvent theEvent) {
+                System.exit(WindowEvent.WINDOW_CLOSING);
+                
+            }
+        });
+        
+        game.add(myNewGame);
+        game.add(myEndGame);
+        game.add(exitGame);
+        add(game);
+    }
+
+    @Override
+    public void actionPerformed(final ActionEvent theEvent) {
+        myToggle = !myToggle;        
+        myNewGame.setEnabled(!myToggle);
+        myEndGame.setEnabled(myToggle);
+        
+        if (theEvent.getActionCommand().equals(myEndGame.getText())) {
+            myTimer.stop();
+        } else {
+            myTetrisBoard.newGame();
+            myTimer = new Timer(TIMER_FREQUENCY, this::handleTimer);
+            myTimer.start();
+            myTimer.setDelay(TIMER_FREQUENCY / 2);
+        }
+    }
+    /**
+     * Shift the board down by 1.
+     * @param theEvent to call the action.
+     */
+    private void handleTimer(final ActionEvent theEvent) {
+        myTetrisBoard.step();
+    }
+    
+    
+}

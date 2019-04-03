@@ -1,0 +1,265 @@
+package view;
+
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Observable;
+import java.util.Observer;
+
+import javax.swing.BorderFactory;
+import javax.swing.JFrame;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JPanel;
+import javax.swing.JTextArea;
+import javax.swing.Timer;
+
+import model.Block;
+import model.Board;
+import model.TetrisPiece;
+
+/**
+ * 
+ * @author Steve Huang
+ * @version 3/1/18
+ */
+public class TetrisGUI extends JFrame {
+    
+    /**
+     * 
+     */
+    private static final long serialVersionUID = 3565967896122405751L;
+    
+    /**
+     * The speed of timer.
+     */
+    private static final int TIMER_FREQUENCY = 10;
+    
+    /**
+     * The high of tetris board.
+     */
+    private static final int HEIGHT = 20;
+    /**
+     * The width of tetris board.
+     */
+    private static final int WIDTH = 10;
+    
+    /**
+     * 
+     */
+    private Board myTetrisBoard;
+    
+    /**
+     * The tetris game board.
+     */
+    private GamePanel myGamePanel;
+    
+    /**
+     * 
+     */
+    private MenuBar myMenuBar;
+    /**
+     * 
+     */
+    private NextPiecePanel myNextPiecePanel;
+    
+    /**
+     * 
+     */
+    private Timer myTimer;
+    
+    /**
+     * 
+     */
+    private Map<Integer, Runnable> myKeyActions;
+    
+    /**
+     * Switch start and pause.
+     */
+    private boolean myPauseToggle;
+    
+    /**
+     * 
+     */
+    private int myX = 0;
+    /**
+     * 
+     */
+    private int myY = 380;
+
+    /**
+     * 
+     */
+    public TetrisGUI() {
+        super("305 Tetris Game");
+        myTetrisBoard = new Board();
+        myGamePanel = new GamePanel();
+        myMenuBar = new MenuBar(myTetrisBoard, myTimer);
+        myNextPiecePanel = new NextPiecePanel(WIDTH, HEIGHT);
+        myKeyActions = new HashMap<Integer, Runnable>();
+        myPauseToggle = false;
+    }
+    
+    /**
+     * 
+     */
+    public void start() {
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setLocationRelativeTo(null);
+        
+        myTetrisBoard.addObserver(myGamePanel);
+        setJMenuBar(myMenuBar);
+        add(myGamePanel, BorderLayout.WEST);
+        add(createPanelEast(), BorderLayout.EAST);
+        createKeyAction();
+        test();
+        
+        
+        addKeyListener(new KeyListener() {//testing
+
+            @Override
+            public void keyTyped(KeyEvent arg0) {
+                System.out.print("typed");                
+            }
+            
+            @Override
+            public void keyReleased(KeyEvent arg0) {
+                System.out.print("released");
+                
+            }
+            
+            @Override
+            public void keyPressed(KeyEvent arg0) {
+                System.out.print("pressed");
+                
+            }
+        });
+        
+        pack();
+        setResizable(false);
+        setVisible(true);
+    }
+    
+    private JPanel createPanelEast() {
+        final JPanel panelEast = new JPanel(new BorderLayout());
+        myTetrisBoard.addObserver(myNextPiecePanel);
+        panelEast.add(myNextPiecePanel, BorderLayout.NORTH);
+        panelEast.add(textAreaPanel(), BorderLayout.CENTER);
+        return panelEast;
+    }
+    
+    private JTextArea textAreaPanel() {
+        final JTextArea textArea = new JTextArea();
+        textArea.setBorder(BorderFactory.createLineBorder(Color.WHITE));
+        textArea.append("Move Left : \u2190 or A or a \n"
+                        + "Move Right : \u2192 or D or d \n"
+                        + "Rotate : \u2191 or W or w \n"
+                        + "Move Down : \u2193 S or s \n"
+                        + "Drop : Space \n"
+                        + "Pause : P or p \n");
+        textArea.setEditable(false);
+        return textArea;
+    }
+    
+    private void createKeyAction() {
+        
+        myKeyActions.put(KeyEvent.VK_D, myTetrisBoard::right);
+        myKeyActions.put(KeyEvent.VK_RIGHT, myTetrisBoard::right);
+        
+        myKeyActions.put(KeyEvent.VK_A, myTetrisBoard::left);
+        myKeyActions.put(KeyEvent.VK_LEFT, myTetrisBoard::left);
+         
+        myKeyActions.put(KeyEvent.VK_S, myTetrisBoard::down);
+        myKeyActions.put(KeyEvent.VK_DOWN, myTetrisBoard::down);
+        
+        myKeyActions.put(KeyEvent.VK_W, myTetrisBoard::rotateCCW);
+        myKeyActions.put(KeyEvent.VK_UP, myTetrisBoard::rotateCCW);
+        
+        myKeyActions.put(KeyEvent.VK_P, this::pauseTimer);
+        
+        myKeyActions.put(KeyEvent.VK_SPACE, myTetrisBoard::drop);
+        System.out.println("key action");
+        
+        this.addKeyListener(new KeyAdapter() {
+
+            @Override
+            public void keyPressed(final KeyEvent theEvent) {
+                super.keyPressed(theEvent);
+                System.out.print("hi");
+                if (myKeyActions.containsKey(theEvent.getKeyCode())) {
+                    System.out.println("hello");
+                    myKeyActions.get(theEvent.getKeyCode()).run();
+                    
+                }
+            }
+        });
+
+
+    }
+    
+    /**
+     * Shift the board down by 1.
+     * @param theEvent to call the action.
+     */
+    private void pauseTimer() {
+        myPauseToggle = !myPauseToggle;
+        System.out.print("pause");
+        if (myPauseToggle) {
+            myTimer.stop();
+        } else {
+            myTimer.restart();
+        }
+    }
+
+    
+    @SuppressWarnings("deprecation")
+    private void test() {
+        
+        myTetrisBoard.addObserver(new Observer() {
+
+            @Override
+            public void update(Observable arg0, Object arg) {
+                if (myY <=20) {
+                    myY = 380;
+                }
+                if (arg instanceof TetrisPiece) {
+                    System.out.println(arg);
+                } else if(arg instanceof Boolean) {
+                    System.out.println("Game over!");
+                } else if (arg instanceof Block[][]) {
+                   // System.out.println();
+                    for (Block[] row : (Block[][]) arg) {
+                        myX = 0;
+                        for (Block b : row) {
+                            if (b == null) {
+                                //System.out.print("[" + myX+ " " + myY + "] ");
+                                myX +=20;
+                            } else {
+                                //System.out.print("[" + b + "]");
+                                myX +=20;
+                            }
+                            
+                        }
+                        //System.out.println();
+                        myY -= 20;
+                    }
+                    //System.out.println();
+                }
+                
+            }
+            
+        });
+    }
+
+}

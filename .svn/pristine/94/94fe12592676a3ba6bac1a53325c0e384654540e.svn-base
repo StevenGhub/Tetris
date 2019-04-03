@@ -1,0 +1,83 @@
+package view;
+
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.JTextArea;
+
+import model.Board;
+
+/**
+ * 
+ * @author Steve Huang
+ * @version 3/1/18
+ */
+public class TetrisGUI extends JFrame {
+    
+    /**
+     * 
+     */
+    private static final long serialVersionUID = 3565967896122405751L;
+    
+    /**
+     * 
+     */
+    private Board myTerisBoard;
+
+    /**
+     * 
+     */
+    public TetrisGUI() {
+        super("305 Tetris Game");
+        myTerisBoard = new Board();
+    }
+    
+    /**
+     * 
+     */
+    public void start() {
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setLocationRelativeTo(null);
+        
+        createGamePanel();
+        add(createPanelEast(), BorderLayout.EAST);
+        
+        pack();
+        setResizable(false);
+        setVisible(true);
+    }
+    /**
+     * 
+     */
+    private void createGamePanel() {
+        final JPanel gamePanel = new JPanel();
+        gamePanel.setPreferredSize(new Dimension(100, 200));
+        add(gamePanel, BorderLayout.WEST);     
+    }
+    
+    private JPanel createPanelEast() {
+        final JPanel panelEast = new JPanel(new BorderLayout());
+        panelEast.add(nextPiecePanel(), BorderLayout.NORTH);
+        panelEast.add(textAreaPanel(), BorderLayout.SOUTH);
+        return panelEast;
+    }
+    private JPanel nextPiecePanel() {
+        final JPanel nextPiece = new JPanel();
+        return nextPiece;
+    }
+    
+    private JTextArea textAreaPanel() {
+        final JTextArea textArea = new JTextArea();
+        textArea.append("Move Left: \u2190 or A or a \n"
+                        + "Move Right: \u2192 or D or d \n"
+                        + "Move Up: \u2191 or W or w \n"
+                        + "Move Down: \u2193 S or s \n"
+                        + "Drop: Space \n"
+                        + "Pause: P or p \n");
+        textArea.setEditable(false);
+        return textArea;
+    }
+
+}
